@@ -1,133 +1,170 @@
-import Field from './field.js';
+'use strict';
+import { Field, ItemType } from './field.js';
 import * as sound from './sound.js';
 
-export default class Game {
-    constructor(gameDuration, carrotCount, bugCount) {
-        this.gameDuration = gameDuration;
-        this.carrotCount = carrotCount;
-        this.bugCount = bugCount;
+export class GameBuilder {
+  gameDuration(duration) {
+    this.gameDuration = duration;
+    return this;
+  }
 
-        this.gameTimer = document.querySelector('.game__timer');
-        this.gameScore = document.querySelector('.game__score');
-        this.gameBtn = document.querySelector('.game__button');
+  carrotCount(num) {
+    this.carrotCount = num;
+    return this;
+  }
 
-        this.gameBtn.addEventListener('click', () => {
-            if (this.started) {
-                this.stop();
-            } else {
-                this.start();
-            }
-        });
+  bugCount(num) {
+    this.bugCount = num;
+    return this;
+  }
 
-        this.gameField = new Field(carrotCount, bugCount);
-        this.gameField.setClickListener(this.onItemClick);
-
-        this.started = false;
-        this.score = 0;
-        this.timer = undefined;
-    }
-
-    setGameStopListener(onGameStop) {
-        this.onGameStop = onGameStop
-    }
-    start() {
-        this.started = true;
-        this.initGame();
-        this.showStopBtn();
-        this.showTimerAndScore();
-        this.startGameTimer();
-        sound.playBg()
-    };
-    
-    stop() {
-        this.started = false;
-        this.stopGameTimer();
-        this.hideStartBtn();
-        sound.playAlert()
-        sound.stopBg();
-        this.onGameStop && this.onGameStop();
-    };
-
-    finish(win) {
-    this.started = false;
-    this.hideStartBtn();
-    if(win) {
-        sound.playWin()
-    } else {
-        sound.playBug();
-    }
-    this.stopGameTimer();
-    sound.stopBg();
-    this.onGameStop && this.onGameStop(win? 'win' : 'lose');
+  build() {
+    return new Game(
+      this.gameDuration, //
+      this.carrotCount,
+      this.bugCount
+    );
+  }
 }
 
-    onItemClick = (item) => {
-        if (!this.started) {
-            return;
+export const Reason = Object.freeze({
+  win: 'win',
+  lose: 'lose',
+  cancel: 'cancel',
+});
+
+class Game {
+  constructor(gameDuration, carrotCount, bugCount) {
+    this.gameDuration = gameDuration;
+    this.carrotCount = carrotCount;
+    this.bugCount = bugCount;
+
+    this.field = new Field(this.carrotCount, this.bugCount);
+    this.field.setItemClickListener(item => this.onItemClick(item));
+    this.timerIndicator = document.querySelector('.game__timer');
+    this.scoreText = document.querySelector('.game__score');
+    this.gameBtn = document.querySelector('.game__button');
+    this.gameBtn.addEventListener('click', () => {
+      if (this.started) {
+        this.stop(Reason.cancel);
+        sound.playAlert();
+      } else {
+        this.start();
+      }
+    });
+
+    this.started = false;
+    this.score = 0;
+    this.timer = undefined;
+  }
+
+  setGameStopListener(onGameStop) {
+    this.onGameStop = onGameStop;
+  }
+
+  start() {
+    this.started = true;
+    this.initGame();
+    this.showStopButton();
+    this.showTimerAndScore();
+    this.startGameTimer();
+    sound.playBackground();
+  }
+
+  stop(reason) {
+    this.started = false;
+    this.hideStartButton();
+    this.stopGameTimer();
+    sound.stopBackground();
+    if (reason === Reason.win) {
+      sound.playWin();
+    } else if (reason === Reason.lose) {
+      sound.playLost();
+    }
+    this.onGameStop && this.onGameStop(reason);
+  }
+
+  initGame() {
+    this.score = 0;
+    this.updateScoreBoard(this.score);
+    this.field.init();
+  }
+
+  onItemClick(item) {
+    if (!this.started) {
+      return;
+    }
+    if (item === ItemType.carrot) {
+      this.score++;
+      this.updateScoreBoard(this.score);
+
+      if (this.score === this.carrotCount) {
+        this.stop(Reason.win);
+      }
+    } else {
+      this.stop(Reason.lose);
+    }
+  }
+
+  startGameTimer() {
+    let remainingTimeSec = this.gameDuration;
+    this.updateTimerText(remainingTimeSec);
+
+    this.timer = setInterval(() => {
+      if (remainingTimeSec <= 0) {
+        clearInterval(this.timer);
+
+        if (this.started) {
+          this.stop(this.score === this.carrotCount ? Reason.win : Reason.lose);
         }
-        if (item === 'carrot') {
-            //당근!!
-            this.score++;
-            this.updateScoreBoard();
-            if(this.score === this.carrotCount) {
-                this.finish(true);
-            }
-        } else if(item === 'bug') {
-            // 벌레!!
-            this.finish(false);
-        }
-    };
 
-    
+        return;
+      }
+      this.updateTimerText(--remainingTimeSec);
+    }, 1000);
+  }
 
-    showStopBtn() {
-        const icon = this.gameBtn.querySelector('.fa-solid');
-        icon.classList.add('fa-stop');
-        icon.classList.remove('fa-play');
-        this.gameBtn.style.visibility = 'visible';
-    }
+  stopGameTimer() {
+    clearInterval(this.timer);
+  }
 
-    hideStartBtn() {
-        this.gameBtn.style.visibility = 'hidden';
-    }
+  updateScoreBoard(newScore) {
+    this.scoreText.innerText = this.carrotCount - newScore;
+  }
 
-    showTimerAndScore() {
-        this.gameTimer.style.visibility = 'visible';
-        this.gameScore.style.visibility = 'visible';
-    }
+  showStartButton() {
+    const icon = this.gameBtn.querySelector('.fas');
+    icon.classList.remove('fa-stop');
+    this.gameBtn.style.visibility = 'visible';
+  }
 
-    startGameTimer() {
-        let remainingTimeSec = this.gameDuration;
-        this.updateTimerText(remainingTimeSec);
-        this.timer = setInterval(()=> {
-            if(remainingTimeSec <= 0) {
-                clearInterval(this.timer);
-                this.finish(this.carrotCount === this.score);
-                return;
-            } 
-            this.updateTimerText(--remainingTimeSec); // 1씩 줄어들기(++의 반대)
-        }, 1000);
-    }
+  showStopButton() {
+    const icon = this.gameBtn.querySelector('.fas');
+    icon.classList.add('fa-stop');
+    this.gameBtn.style.visibility = 'visible';
+  }
 
-    stopGameTimer() {
-        clearInterval(this.timer)
-    }
+  hideStartButton() {
+    this.gameBtn.style.visibility = 'hidden';
+  }
 
-    updateTimerText(time) {
-        const minutes = Math.floor(time / 60); //소수점이면 내려줌
-        const seconds = time % 60;
-        this.gameTimer.innerText = `${minutes}:${seconds}`;
-    }
+  showTimerAndScore() {
+    this.timerIndicator.style.visibility = 'visible';
+    this.scoreText.style.visibility = 'visible';
+  }
 
-    initGame() {
-        this.score = 0;
-        this.gameScore.innerText = this.CARROT_COUNT;
-        this.gameField.init();
-        
-    }
+  hideTimerAndScore() {
+    this.timerIndicator.style.visibility = 'hidden';
+    this.scoreText.style.visibility = 'hidden';
+  }
 
-    updateScoreBoard() {
-        this.gameScore.innerText = this.CARROT_COUNT - this.score; //남은 당근의 수
-    }
+  updateTimerText(time) {
+    const minutes = Math.floor(time / 60);
+    const seconds = time % 60;
+    this.timerIndicator.innerHTML = `${minutes}:${seconds}`;
+  }
 
+  resetScoreText() {
+    this.scoreText.innerText = this.carrotCount;
+  }
 }

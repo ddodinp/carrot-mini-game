@@ -1,112 +1,109 @@
-button {
-    border: none;
-    outline: none;
-    cursor: pointer;
-}
-
 body {
     text-align: center;
     background-color: black;
-}
-.game {
+  }
+  
+  button {
+    outline: none;
+    cursor: pointer;
+    border: none;
+    background: white;
+    border-radius: 20%;
+    padding: 0;
+  }
+  
+  .game {
     display: flex;
     flex-direction: column;
-    background: url(img/background.png) center/cover;
+    position: relative;
     width: 800px;
-    height: 500px;
-    margin: 0 auto;
-    border-radius: 20px;
-}
-
-.game__header {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 20px;
-}
-
-.game__button {
+    height: 550px;
+    margin: auto;
+    margin-top: 50px;
+    background: url(img/background.png) center/cover no-repeat;
+  }
+  
+  header {
+    text-align: center;
+    padding: 8px;
+  }
+  
+  .game__button {
     width: 60px;
     height: 60px;
+    font-size: 24px;
     background-color: wheat;
     border: 4px solid black;
-    font-size: 24px;
-    transition: transform 300ms ease-in;
-}
-
-.game__button:hover {
+    transition: transfrom 300ms ease-in;
+  }
+  
+  .game__button:hover {
     transform: scale(1.1);
-}
-
-.game__timer {
+  }
+  
+  .game__timer {
+    display: block;
     width: 100px;
-    background-color: white;
-    text-align: center;
-    border: 5px solid black;
-    border-radius: 20px;
-    font-size: 32px;
+    margin: auto;
     margin-top: 8px;
-    visibility: hidden;
-    /* display:none의 경우 영역을 인식하지 않기 때문에 레이아웃에 영향을 줄 수 있다. 그래서 영역은 차지하면서 보이지 않는 visivility가 적절 */
-    user-select: none;
-    cursor: auto;
-}
-
-.game__score {
+    padding: 0 20px;
+    background-color: white;
+    border-radius: 10px;
+    font-size: 32px;
+    border: 5px solid black;
+  }
+  
+  .game__score {
+    display: inline-block;
     width: 50px;
     height: 50px;
     font-size: 38px;
-    text-align: center;
-    color: white;
+    margin-top: 4px;
     background-color: darksalmon;
-    border: 3px solid black;
+    color: white;
     border-radius: 50%;
-    margin-top: 8px;
-    visibility: hidden;
-    user-select: none;
-    cursor: auto;
-
-}
-.game__field {
+    border: 3px solid black;
+  }
+  
+  .game__field {
     width: 100%;
     height: 100%;
-    margin-top: 40px;
-    position: relative;
-}
-
-.pop-up {
-    width: 400px;
-    height: 140px;
-    padding: 20px;
-    background-color: #00000090; /*코드 뒤에 투명도*/
-    color: white;
+  }
+  
+  .pop-up {
     border-radius: 20px;
-    text-align: center;
-    margin: 0 auto;
+    width: 400px;
+    height: 124px;
+    margin: auto;
+    background-color: #00000090;
+    color: white;
     transform: translateY(-150%);
-}
-.pop-up--hide {
-    display: none;
-}
-.pop-up__refresh {
+  }
+  
+  .pop-up__refresh {
     width: 60px;
     height: 60px;
     font-size: 24px;
-    text-align: center;
     background-color: wheat;
     border: 2px solid black;
-    border-radius: 50%;
-}
-
-.pop-up__message {
+    transition: transfrom 300ms ease-in;
+  }
+  
+  .pop-up__refresh:hover {
+    transform: scale(1.1);
+  }
+  
+  .pop-up__message {
     display: block;
     font-size: 38px;
-
-}
-
-.carrot, .bug {
-    transition: transform 100ms eas-in;
-}
-.carrot:hover, .bug:hover {
+  }
+  
+  .hide {
+    display: none;
+  }
+  
+  .carrot:hover,
+  .bug:hover {
     transform: scale(1.1);
-}
+  }
+  

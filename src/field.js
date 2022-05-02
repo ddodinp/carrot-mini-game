@@ -42,7 +42,7 @@ export default class Field {
         }
     }
     
-    onClick(event) {
+    onClick = (event) => {
         const target = event.target;
         if(target.matches('.carrot')) {
             //당근!!
@@ -53,7 +53,7 @@ export default class Field {
             // 벌레!!
             this.onClick && this.onItemClick('bug');
         }
-    }
+    };
 }
 
 
